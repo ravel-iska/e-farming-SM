@@ -218,7 +218,7 @@ export default function ManajemenLahan() {
         <div className="land-grid">
           {filtered.map((land) => (
             <div key={land.id} className="land-card glass-panel">
-              <div className="land-image-wrapper" style={land.imageUrl ? { backgroundImage: `url(${land.imageUrl.startsWith('data:') ? land.imageUrl : `\${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : (window.location.hostname === 'localhost' ? 'http://localhost:5000' : '')}\${land.imageUrl}`})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
+              <div className="land-image-wrapper" style={land.imageUrl ? { backgroundImage: `url(${getImageUrl(land.imageUrl)})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
                 <div className="land-image-gradient" style={land.imageUrl ? { background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' } : { background: `linear-gradient(135deg, ${['#10b981','#3b82f6','#f59e0b','#8b5cf6','#ef4444'][land.id % 5]}44, ${['#059669','#2563eb','#d97706','#7c3aed','#dc2626'][land.id % 5]}88)` }}>
                   {!land.imageUrl && <MapPin size={40} color="rgba(255,255,255,0.5)" />}
                 </div>
@@ -286,7 +286,7 @@ export default function ManajemenLahan() {
                 <label>Dokumentasi Gambar Lahan (Maks 5MB)</label>
                 <div className="image-upload-wrapper" style={{ border: '2px dashed var(--border)', padding: '1rem', borderRadius: '8px', textAlign: 'center', cursor: 'pointer', position: 'relative' }}>
                   {form.imageUrl ? (
-                    <img src={form.imageUrl.startsWith('data:') ? form.imageUrl : `\${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : (window.location.hostname === 'localhost' ? 'http://localhost:5000' : '')}\${form.imageUrl}`} alt="Preview" style={{ width: '100%', maxHeight: '150px', objectFit: 'cover', borderRadius: '4px' }} />
+                    <img src={getImageUrl(form.imageUrl)} alt="Preview" style={{ width: '100%', maxHeight: '150px', objectFit: 'cover', borderRadius: '4px' }} />
                   ) : (
                     <div style={{ padding: '2rem 0', color: 'var(--text-muted)' }}>
                       <Camera size={32} style={{ margin: '0 auto 0.5rem' }} />
