@@ -136,10 +136,16 @@ export default function ManajemenLahan() {
     if (!form.name.trim()) return;
     setSaving(true);
     try {
+      const payload = {
+        ...form,
+        area: Number(form.area),
+        latitude: parseFloat(form.latitude) || 0,
+        longitude: parseFloat(form.longitude) || 0,
+      };
       if (editItem) {
-        await updateLahan(editItem.id, { ...form, area: Number(form.area) });
+        await updateLahan(editItem.id, payload);
       } else {
-        await createLahan({ ...form, area: Number(form.area) });
+        await createLahan(payload);
       }
       setShowModal(false);
       fetchLahan();
@@ -303,15 +309,11 @@ export default function ManajemenLahan() {
                 <div className="form-row" style={{ marginBottom: '1rem' }}>
                   <div className="form-group" style={{ marginBottom: 0 }}>
                     <label style={{ fontSize: '0.85rem' }}>Latitude</label>
-                    <input type="number" step="any" value={form.latitude} onChange={e => setForm({ ...form, latitude: parseFloat(e.target.value) || 0 })} />
+                    <input type="text" inputMode="decimal" value={form.latitude} onChange={e => setForm({ ...form, latitude: e.target.value })} onBlur={e => { const val = parseFloat(e.target.value); if (!isNaN(val)) { setForm(prev => ({ ...prev, latitude: val })); fetchAddress(val, parseFloat(form.longitude) || 0); } }} placeholder="-7.123456" />
                   </div>
                   <div className="form-group" style={{ marginBottom: 0 }}>
                     <label style={{ fontSize: '0.85rem' }}>Longitude</label>
-                    <input type="number" step="any" value={form.longitude} onChange={e => {
-                      const val = parseFloat(e.target.value) || 0;
-                      setForm({ ...form, longitude: val });
-                      if(form.latitude) fetchAddress(form.latitude, val);
-                    }} />
+                    <input type="text" inputMode="decimal" value={form.longitude} onChange={e => setForm({ ...form, longitude: e.target.value })} onBlur={e => { const val = parseFloat(e.target.value); if (!isNaN(val)) { setForm(prev => ({ ...prev, longitude: val })); fetchAddress(parseFloat(prev.latitude) || 0, val); } }} placeholder="110.123456" />
                   </div>
                 </div>
 
