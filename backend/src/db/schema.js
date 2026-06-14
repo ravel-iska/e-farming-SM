@@ -25,6 +25,9 @@ export const lahan = pgTable('lahan', {
   irrigation: varchar('irrigation', { length: 20 }),
   status: varchar('status', { length: 20 }).default('Aktif'),
   imageUrl: text('image_url'),
+  latitude: decimal('latitude', { precision: 10, scale: 8 }),
+  longitude: decimal('longitude', { precision: 11, scale: 8 }),
+  address: text('address'),
   createdAt: timestamp('created_at').defaultNow(),
 });
 
@@ -42,6 +45,20 @@ export const tanaman = pgTable('tanaman', {
   estHarvest: date('est_harvest'),
   progress: integer('progress').default(0),
   health: varchar('health', { length: 30 }).default('Baik'),
+  imageUrl: text('image_url'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// ==============================
+// TANAMAN TIMELINE (FASE)
+// ==============================
+export const tanamanTimeline = pgTable('tanaman_timeline', {
+  id: serial('id').primaryKey(),
+  tanamanId: integer('tanaman_id').references(() => tanaman.id, { onDelete: 'cascade' }).notNull(),
+  title: varchar('title', { length: 200 }).notNull(),
+  description: text('description'),
+  imageUrl: text('image_url'),
+  date: date('date').defaultNow(),
   createdAt: timestamp('created_at').defaultNow(),
 });
 
@@ -71,8 +88,10 @@ export const inventori = pgTable('inventori', {
   stock: integer('stock').default(0),
   unit: varchar('unit', { length: 20 }),
   status: varchar('status', { length: 20 }).default('Aman'),
+  imageUrl: text('image_url'),
   updatedAt: timestamp('updated_at').defaultNow(),
 });
+
 
 // ==============================
 // LAPORAN PRODUKTIVITAS
@@ -140,4 +159,19 @@ export const transaksiJualBeli = pgTable('transaksi_jualbeli', {
   totalNominal: bigint('total_nominal', { mode: 'number' }).notNull(),
   status: varchar('status', { length: 20 }).default('Selesai'),
   date: timestamp('date').defaultNow(),
+});
+
+// ==============================
+// EDUKASI
+// ==============================
+export const edukasi = pgTable('edukasi', {
+  id: serial('id').primaryKey(),
+  title: varchar('title', { length: 200 }).notNull(),
+  type: varchar('type', { length: 50 }).default('Artikel'), // Artikel, Berita, Panduan
+  category: varchar('category', { length: 50 }),
+  readTime: varchar('read_time', { length: 50 }),
+  imageUrl: text('image_url'),
+  link: text('link'),
+  content: text('content'),
+  createdAt: timestamp('created_at').defaultNow(),
 });

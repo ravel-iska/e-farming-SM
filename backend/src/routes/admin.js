@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { db } from '../db/index.js';
-import { users, lahan, tanaman, inventori, jadwal, konsultasiPakar, bugReports } from '../db/schema.js';
+import { users, lahan, tanaman, inventori, jadwal, konsultasiPakar, bugReports, transaksiJualBeli, edukasi } from '../db/schema.js';
 import { eq, sql, desc } from 'drizzle-orm';
+
 import { authMiddleware } from '../middleware/auth.js';
 import { adminMiddleware } from '../middleware/admin.js';
 
@@ -71,6 +72,34 @@ router.delete('/users/:id', async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Gagal hapus user' }); }
 });
 
+router.get('/users/:id/details', async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    const [user] = await db.select({
+      id: users.id, name: users.name, email: users.email, role: users.role, createdAt: users.createdAt, avatar: users.photoUrl
+    }).from(users).where(eq(users.id, userId));
+
+    if (!user) return res.status(404).json({ error: 'User tidak ditemukan' });
+
+    const userLahan = await db.select().from(lahan).where(eq(lahan.userId, userId));
+    const userTanaman = await db.select().from(tanaman).where(eq(tanaman.userId, userId));
+    const userInventori = await db.select().from(inventori).where(eq(inventori.userId, userId));
+    const userTransaksi = await db.select().from(transaksiJualBeli).where(eq(transaksiJualBeli.userId, userId)).orderBy(sql`${transaksiJualBeli.date} DESC`).limit(20);
+
+    res.json({
+      user,
+      lahan: userLahan,
+      tanaman: userTanaman,
+      inventori: userInventori,
+      transaksi: userTransaksi
+    });
+  } catch (err) { 
+    console.error('Details user err:', err);
+    res.status(500).json({ error: 'Gagal mengambil detail user' }); 
+  }
+});
+
+
 // ==============================
 // DATA TRANSAKSIONAL GLOBAL
 // ==============================
@@ -79,6 +108,7 @@ router.get('/lahan', async (req, res) => {
   try {
     const result = await db.select({
       id: lahan.id, name: lahan.name, area: lahan.area, soilType: lahan.soilType, irrigation: lahan.irrigation, status: lahan.status,
+      imageUrl: lahan.imageUrl, latitude: lahan.latitude, longitude: lahan.longitude,
       owner_name: users.name
     }).from(lahan).leftJoin(users, eq(lahan.userId, users.id)).orderBy(sql`${lahan.id} DESC`);
     res.json(result);
@@ -88,7 +118,7 @@ router.get('/lahan', async (req, res) => {
 router.get('/tanaman', async (req, res) => {
   try {
     const result = await db.select({
-      id: tanaman.id, name: tanaman.name, lahanName: tanaman.lahanName, progress: tanaman.progress, health: tanaman.health, plantDate: tanaman.plantDate, icon: tanaman.icon,
+      id: tanaman.id, name: tanaman.name, lahanName: tanaman.lahanName, progress: tanaman.progress, health: tanaman.health, plantDate: tanaman.plantDate, estHarvest: tanaman.estHarvest, icon: tanaman.icon, imageUrl: tanaman.imageUrl,
       owner_name: users.name
     }).from(tanaman).leftJoin(users, eq(tanaman.userId, users.id)).orderBy(sql`${tanaman.id} DESC`);
     res.json(result);
@@ -212,6 +242,42 @@ router.delete('/bugs/:id', async (req, res) => {
     await db.delete(bugReports).where(eq(bugReports.id, parseInt(req.params.id)));
     res.json({ message: 'Laporan dihapus' });
   } catch (err) { res.status(500).json({ error: 'Gagal hapus laporan' }); }
+});
+
+// ==============================
+// EDUKASI (CRUD Admin)
+// ==============================
+router.post('/edukasi', async (req, res) => {
+  try {
+    const data = { ...req.body };
+    delete data.id;
+    delete data.createdAt;
+    const [inserted] = await db.insert(edukasi).values(data).returning();
+    res.json(inserted);
+  } catch (err) {
+    res.status(500).json({ error: 'Gagal menambah edukasi' });
+  }
+});
+
+router.put('/edukasi/:id', async (req, res) => {
+  try {
+    const data = { ...req.body };
+    delete data.id;
+    delete data.createdAt;
+    const [updated] = await db.update(edukasi).set(data).where(eq(edukasi.id, parseInt(req.params.id))).returning();
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ error: 'Gagal update edukasi' });
+  }
+});
+
+router.delete('/edukasi/:id', async (req, res) => {
+  try {
+    await db.delete(edukasi).where(eq(edukasi.id, parseInt(req.params.id)));
+    res.json({ message: 'Edukasi dihapus' });
+  } catch (err) {
+    res.status(500).json({ error: 'Gagal hapus edukasi' });
+  }
 });
 
 export default router;

@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Bell, Search, Sun, Moon, User, LogOut, Settings, ChevronDown, Bug, Send, X, CheckCircle2 } from 'lucide-react';
+import { Bell, Search, Sun, Moon, User, LogOut, Settings, ChevronDown, Bug, Send, X, CheckCircle2, Menu } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { clearAuth, getUser, getMyBugs, createBug, getBugCount } from '../utils/api';
 import './Topbar.css';
 
-export default function Topbar() {
+export default function Topbar({ toggleSidebar }) {
   const navigate = useNavigate();
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
   const [showDropdown, setShowDropdown] = useState(false);
@@ -82,6 +82,11 @@ export default function Topbar() {
   return (
     <>
     <header className="topbar glass-panel">
+      <div className="topbar-left-mobile">
+        <button className="btn-icon mobile-menu-btn" onClick={toggleSidebar}>
+          <Menu size={24} />
+        </button>
+      </div>
       <div className="search-bar">
         <Search className="search-icon" size={20} />
         <input type="text" placeholder="Cari data lahan, tanaman, dll..." />

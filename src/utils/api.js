@@ -123,6 +123,19 @@ export async function deleteTanaman(id) {
   return apiFetch(`/tanaman/${id}`, { method: 'DELETE' });
 }
 
+// TIMELINE TANAMAN
+export async function getTanamanTimeline(id) {
+  return apiFetch(`/tanaman/${id}/timeline`);
+}
+
+export async function createTanamanTimeline(id, data) {
+  return apiFetch(`/tanaman/${id}/timeline`, { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function deleteTanamanTimeline(tanamanId, timelineId) {
+  return apiFetch(`/tanaman/${tanamanId}/timeline/${timelineId}`, { method: 'DELETE' });
+}
+
 // ========== JADWAL ==========
 export async function getJadwal() {
   return apiFetch('/jadwal');
@@ -191,6 +204,10 @@ export async function getAdminPengajuan() {
   return apiFetch('/jualbeli/admin/pengajuan');
 }
 
+export async function getAdminHistory() {
+  return apiFetch('/jualbeli/admin/history');
+}
+
 export async function terimaPengajuan(id) {
   return apiFetch(`/jualbeli/admin/terima/${id}`, { method: 'PUT' });
 }
@@ -249,11 +266,18 @@ export async function getPakarPublic() {
   return apiFetch('/konsultasi/pakar');
 }
 
+// ========== EDUKASI ==========
+export async function getEdukasi() { return apiFetch('/edukasi'); }
+export async function createAdminEdukasi(data) { return apiFetch('/admin/edukasi', { method: 'POST', body: JSON.stringify(data) }); }
+export async function updateAdminEdukasi(id, data) { return apiFetch(`/admin/edukasi/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
+export async function deleteAdminEdukasi(id) { return apiFetch(`/admin/edukasi/${id}`, { method: 'DELETE' }); }
+
 // ========== ADMIN ==========
 export async function getAdminStats() { return apiFetch('/admin/stats'); }
 export async function getAdminUsers() { return apiFetch('/admin/users'); }
 export async function updateAdminUser(id, data) { return apiFetch(`/admin/users/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
 export async function deleteAdminUser(id) { return apiFetch(`/admin/users/${id}`, { method: 'DELETE' }); }
+export async function getAdminUserDetails(id) { return apiFetch(`/admin/users/${id}/details`); }
 export async function getAdminLahan() { return apiFetch('/admin/lahan'); }
 export async function getAdminTanaman() { return apiFetch('/admin/tanaman'); }
 export async function getAdminInventori() { return apiFetch('/admin/inventori'); }

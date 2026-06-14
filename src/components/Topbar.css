@@ -229,7 +229,18 @@ img.avatar-lg {
   background: rgba(239, 68, 68, 0.08);
 }
 
-@media (max-width: 768px) {
+.topbar-left-mobile {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .topbar {
+    padding: 0.75rem 1rem;
+    margin: 1rem 1rem 0;
+  }
+  .topbar-left-mobile {
+    display: block;
+  }
   .search-bar {
     display: none;
   }

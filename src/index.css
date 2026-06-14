@@ -141,3 +141,21 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--emerald-primary); 
 }
+
+/* Global Form Input */
+.form-input {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-input:focus {
+  border-color: var(--emerald-primary);
+}

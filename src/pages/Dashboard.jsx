@@ -113,7 +113,9 @@ export default function Dashboard() {
             {recentTanaman.length > 0 ? recentTanaman.map(t => (
               <div key={t.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--glass-border)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <span style={{ fontSize: '1.5rem' }}>{t.icon}</span>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '8px', overflow: 'hidden', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {t.imageUrl ? <img src={t.imageUrl} alt={t.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <Sprout size={20} color="var(--emerald-primary)" />}
+                  </div>
                   <div>
                     <strong>{t.name}</strong>
                     <div className="text-muted" style={{ fontSize: '0.8rem' }}>{t.lahanName}</div>

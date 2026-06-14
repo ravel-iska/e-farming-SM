@@ -10,7 +10,7 @@
   left: 0;
   top: 0;
   z-index: 50;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease;
 }
 
 .admin-sidebar-brand {
@@ -21,6 +21,7 @@
   gap: 12px;
   background-color: #151c28; /* Slightly darker */
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
 }
 
 .admin-sidebar-brand h2 {
@@ -79,6 +80,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  flex-shrink: 0;
 }
 
 .admin-btn-logout, .admin-btn-back {
@@ -113,4 +115,44 @@
 .admin-btn-back:hover {
   background-color: rgba(255, 255, 255, 0.1);
   color: #fff;
+}
+
+/* Mobile close button - hidden by default */
+.admin-sidebar .mobile-close-btn {
+  display: none;
+}
+
+/* Admin sidebar overlay - hidden by default */
+.admin-sidebar-overlay {
+  display: none;
+}
+
+/* ============================
+   MOBILE RESPONSIVE (<= 900px)
+   ============================ */
+@media (max-width: 900px) {
+  .admin-sidebar {
+    transform: translateX(-100%);
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .admin-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .admin-sidebar .mobile-close-btn {
+    display: flex !important;
+  }
+
+  .admin-sidebar-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+    z-index: 45;
+  }
 }

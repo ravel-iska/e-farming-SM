@@ -6,6 +6,26 @@
   flex-direction: column;
   padding: 1.5rem;
   z-index: 20;
+  transition: transform 0.3s ease;
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    transform: translateX(-100%);
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  
+  .sidebar-brand .mobile-close-btn {
+    display: flex !important;
+  }
 }
 
 .sidebar-brand {

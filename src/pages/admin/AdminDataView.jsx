@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { Leaf, Search, Map, Package, Wheat } from 'lucide-react';
 import { getAdminLahan, getAdminTanaman, getAdminInventori, getAdminJadwal } from '../../utils/api';
-import { Search } from 'lucide-react';
 
 // Generik tabel komponen untuk Lahan, Tanaman, Inventori, Jadwal
 export default function AdminDataView({ type }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+
+  const getImageUrl = (url) => url ? (url.startsWith('data:') || url.startsWith('http') ? url : `http://localhost:5000${url}`) : '';
 
   useEffect(() => {
     fetchData();
@@ -31,8 +33,8 @@ export default function AdminDataView({ type }) {
   });
 
   const getColumns = () => {
-    if (type === 'lahan') return ['Pemilik', 'Nama Blok', 'Luas', 'Sistem Irigasi', 'Status'];
-    if (type === 'tanaman') return ['Pemilik', 'Tanaman', 'Lahan', 'Progress', 'Kesehatan'];
+    if (type === 'lahan') return ['Pemilik', 'Foto', 'Nama Blok', 'Luas', 'Sistem Irigasi', 'Koordinat', 'Status'];
+    if (type === 'tanaman') return ['Pemilik', 'Foto', 'Tanaman', 'Lahan', 'Est. Panen', 'Progress', 'Kesehatan'];
     if (type === 'inventori') return ['Pemilik', 'Barang', 'Kategori', 'Stok', 'Status'];
     if (type === 'jadwal') return ['Pemilik', 'Kegiatan', 'Tanggal', 'Tipe', 'Status'];
     return [];
@@ -42,17 +44,35 @@ export default function AdminDataView({ type }) {
     if (type === 'lahan') return (
       <>
         <td><strong>{item.owner_name || 'Hapus/Anonim'}</strong></td>
+        <td>
+          {item.imageUrl ? (
+            <img src={getImageUrl(item.imageUrl)} alt={item.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px' }} />
+          ) : (
+            <div style={{ width: '40px', height: '40px', background: 'rgba(255,255,255,0.1)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Map size={20} color="rgba(255,255,255,0.6)" /></div>
+          )}
+        </td>
         <td>{item.name}</td>
         <td>{item.area} Ha</td>
         <td>{item.irrigation}</td>
+        <td>{(item.latitude && item.longitude) ? <a href={`https://maps.google.com/?q=${item.latitude},${item.longitude}`} target="_blank" rel="noreferrer" style={{ color: '#3b82f6', textDecoration: 'underline' }}>Peta ({Number(item.latitude).toFixed(3)}, {Number(item.longitude).toFixed(3)})</a> : '-'}</td>
         <td><span className={`admin-badge ${item.status === 'Aktif' ? 'success' : 'warning'}`}>{item.status}</span></td>
       </>
     );
     if (type === 'tanaman') return (
       <>
         <td><strong>{item.owner_name || 'Hapus/Anonim'}</strong></td>
-        <td>{item.icon} {item.name}</td>
+        <td>
+          {item.imageUrl ? (
+            <img src={getImageUrl(item.imageUrl)} alt={item.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px' }} />
+          ) : (
+            <div style={{ width: '40px', height: '40px', background: 'rgba(255,255,255,0.1)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Leaf size={20} color="rgba(255,255,255,0.6)" />
+            </div>
+          )}
+        </td>
+        <td>{item.name}</td>
         <td>{item.lahanName}</td>
+        <td>{item.estHarvest ? new Date(item.estHarvest).toLocaleDateString('id-ID') : '-'}</td>
         <td>{item.progress}%</td>
         <td><span className={`admin-badge ${item.health === 'Baik' ? 'success' : item.health === 'Siap Panen' ? 'info' : 'danger'}`}>{item.health}</span></td>
       </>
@@ -60,7 +80,14 @@ export default function AdminDataView({ type }) {
     if (type === 'inventori') return (
       <>
         <td><strong>{item.owner_name || 'Hapus/Anonim'}</strong></td>
-        <td>{item.item}</td>
+        <td>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ width: '32px', height: '32px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+              {item.imageUrl ? <img src={getImageUrl(item.imageUrl)} alt={item.item} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (item.category === 'Hasil Panen' ? <Wheat size={16} color="rgba(255,255,255,0.5)" /> : <Package size={16} color="rgba(255,255,255,0.5)" />)}
+            </div>
+            {item.item}
+          </div>
+        </td>
         <td>{item.category}</td>
         <td>{item.stock} {item.unit}</td>
         <td><span className={`admin-badge ${item.status === 'Aman' ? 'success' : 'danger'}`}>{item.status}</span></td>

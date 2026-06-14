@@ -19,6 +19,7 @@ import diagnosaRoutes from './routes/diagnosa.js';
 import konsultasiRoutes from './routes/konsultasi.js';
 import bugsRoutes from './routes/bugs.js';
 import jualbeliRoutes from './routes/jualbeli.js';
+import edukasiRoutes from './routes/edukasi.js';
 
 import adminRoutes from './routes/admin.js';
 import { authMiddleware } from './middleware/auth.js';
@@ -35,6 +36,10 @@ global.CUSTOM_API_KEY = process.env.OPENROUTER_API_KEY || '';
 app.use(cors());
 app.use(compression());
 app.use(express.json({ limit: '10mb' }));
+
+// Serve static files
+const publicPath = path.join(__dirname, '../public');
+app.use('/uploads', express.static(path.join(publicPath, 'uploads')));
 
 // Public Endpoints
 app.get('/api/maintenance/status', (req, res) => {
@@ -53,6 +58,7 @@ app.use('/api/diagnosa', diagnosaRoutes);
 app.use('/api/konsultasi', konsultasiRoutes);
 app.use('/api/bugs', bugsRoutes);
 app.use('/api/jualbeli', jualbeliRoutes);
+app.use('/api/edukasi', edukasiRoutes);
 
 // Admin Route Group
 app.use('/api/admin', adminRoutes);

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import AdminSidebar from './AdminSidebar';
-import { ShieldAlert, Bell, ChevronDown, LogOut } from 'lucide-react';
+import { ShieldAlert, Bell, ChevronDown, LogOut, Sun, Moon, Menu } from 'lucide-react';
 import api, { getAdminBugs, getUser, clearAuth } from '../utils/api';
 import './Topbar.css'; // Reuse topbar classes
 import '../pages/admin/Admin.css';
@@ -11,6 +11,15 @@ export default function AdminLayout() {
   const location = useLocation();
   const [maintenance, setMaintenance] = useState(false);
   const user = getUser();
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
 
   // Dropdown states
   const [showDropdown, setShowDropdown] = useState(false);
@@ -59,7 +68,11 @@ export default function AdminLayout() {
 
   return (
     <div className={`app-layout admin-mode`}>
-      <AdminSidebar />
+      <AdminSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+      {/* Mobile overlay for sidebar */}
+      {isSidebarOpen && (
+        <div className="admin-sidebar-overlay" onClick={() => setIsSidebarOpen(false)}></div>
+      )}
       <main className="main-content">
         {maintenance && (
           <div className="maintenance-banner animate-fade-in">
@@ -69,10 +82,16 @@ export default function AdminLayout() {
         )}
         
         <header className="topbar glass-panel admin-topbar">
-          <div className="topbar-left">
+          <div className="topbar-left" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <button className="btn-icon admin-mobile-menu-btn" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+              <Menu size={24} />
+            </button>
             <h1 style={{ fontSize: '1.25rem', margin: 0, fontWeight: 700 }}>Admin Panel</h1>
           </div>
           <div className="topbar-actions">
+            <button className="btn-icon" onClick={toggleTheme} title={theme === 'dark' ? 'Mode Terang' : 'Mode Gelap'}>
+              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
             
             {/* Notification Bell */}
             <div style={{ position: 'relative' }} ref={notifRef}>

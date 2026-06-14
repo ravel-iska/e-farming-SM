@@ -47,15 +47,12 @@ router.get('/katalog', async (req, res) => {
 // POST /api/inventori
 router.post('/', async (req, res) => {
   try {
-    const { item, category, stock, unit, status } = req.body;
+    const { item, category, stock, unit, status, imageUrl } = req.body;
 
     if (!item) {
       return res.status(400).json({ error: 'Nama barang wajib diisi.' });
     }
 
-    // Always assign items created by Admin to the FIRST admin ID, to avoid fragmentation.
-    // However, if we do that, we must ensure Admin 1 exists.
-    // If it's a Petani, they create their own.
     let targetUserId = req.user.id;
     if (req.user.role === 'admin') {
       const adminIds = await getAdminIds();
@@ -69,6 +66,7 @@ router.post('/', async (req, res) => {
       stock: stock || 0,
       unit,
       status: status || 'Aman',
+      imageUrl: imageUrl || null,
     }).returning();
 
     res.status(201).json(newItem);
@@ -81,7 +79,7 @@ router.post('/', async (req, res) => {
 // PUT /api/inventori/:id
 router.put('/:id', async (req, res) => {
   try {
-    const { item, category, stock, unit, status } = req.body;
+    const { item, category, stock, unit, status, imageUrl } = req.body;
 
     let condition;
     if (req.user.role === 'admin') {
@@ -91,8 +89,11 @@ router.put('/:id', async (req, res) => {
       condition = and(eq(inventori.id, parseInt(req.params.id)), eq(inventori.userId, req.user.id));
     }
 
+    const updateData = { item, category, stock, unit, status, updatedAt: new Date() };
+    if (imageUrl !== undefined) updateData.imageUrl = imageUrl;
+
     const [updated] = await db.update(inventori)
-      .set({ item, category, stock, unit, status, updatedAt: new Date() })
+      .set(updateData)
       .where(condition)
       .returning();
 

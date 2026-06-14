@@ -8,4 +8,8 @@ export default defineConfig({
     react(),
     viteCompression({ algorithm: 'gzip', ext: '.gz' })
   ],
+  server: {
+    open: true,
+    port: 5173
+  }
 })

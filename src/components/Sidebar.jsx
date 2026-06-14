@@ -1,9 +1,9 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Map, Sprout, Calendar, Package, BarChart3, Leaf, BookOpen, MessageSquare, Activity, CloudSun } from 'lucide-react';
+import { LayoutDashboard, Map, Sprout, Calendar, Package, BarChart3, Leaf, BookOpen, MessageSquare, Activity, CloudSun, X } from 'lucide-react';
 import './Sidebar.css';
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen, setIsOpen }) {
   const mainNavItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Lahan', path: '/lahan', icon: Map },
@@ -21,10 +21,19 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar-brand">
-        <Leaf className="brand-icon" size={28} />
-        <h2>Tani.Smart</h2>
+    <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
+      <div className="sidebar-brand" style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <Leaf className="brand-icon" size={28} />
+          <h2>Agro.Tani</h2>
+        </div>
+        <button 
+          className="btn-icon mobile-close-btn" 
+          onClick={() => setIsOpen(false)}
+          style={{ display: 'none' }}
+        >
+          <X size={24} />
+        </button>
       </div>
       <nav className="sidebar-nav">
         {mainNavItems.map((item) => {

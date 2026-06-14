@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { db } from '../db/index.js';
-import { tanaman } from '../db/schema.js';
-import { eq, and } from 'drizzle-orm';
+import { tanaman, tanamanTimeline } from '../db/schema.js';
+import { eq, and, desc } from 'drizzle-orm';
 import { authMiddleware } from '../middleware/auth.js';
 
 const router = Router();
@@ -21,7 +21,7 @@ router.get('/', async (req, res) => {
 // POST /api/tanaman
 router.post('/', async (req, res) => {
   try {
-    const { name, lahanId, lahanName, icon, plantDate, estHarvest, progress, health } = req.body;
+    const { name, lahanId, lahanName, icon, plantDate, estHarvest, progress, health, imageUrl } = req.body;
 
     if (!name || !plantDate) {
       return res.status(400).json({ error: 'Nama tanaman dan tanggal tanam wajib diisi.' });
@@ -37,6 +37,7 @@ router.post('/', async (req, res) => {
       estHarvest,
       progress: progress || 0,
       health: health || 'Baik',
+      imageUrl
     }).returning();
 
     res.status(201).json(newTanaman);
@@ -49,10 +50,10 @@ router.post('/', async (req, res) => {
 // PUT /api/tanaman/:id
 router.put('/:id', async (req, res) => {
   try {
-    const { name, lahanId, lahanName, icon, plantDate, estHarvest, progress, health } = req.body;
+    const { name, lahanId, lahanName, icon, plantDate, estHarvest, progress, health, imageUrl } = req.body;
 
     const [updated] = await db.update(tanaman)
-      .set({ name, lahanId, lahanName, icon, plantDate, estHarvest, progress, health })
+      .set({ name, lahanId, lahanName, icon, plantDate, estHarvest, progress, health, imageUrl })
       .where(and(eq(tanaman.id, parseInt(req.params.id)), eq(tanaman.userId, req.user.id)))
       .returning();
 
@@ -119,7 +120,8 @@ router.post('/:id/panen', async (req, res) => {
         category: 'Hasil Panen',
         stock: parseInt(quantity),
         unit: 'Kg',
-        status: 'Aman'
+        status: 'Aman',
+        imageUrl: crop.imageUrl
       });
     }
 
@@ -130,6 +132,66 @@ router.post('/:id/panen', async (req, res) => {
   } catch (err) {
     console.error('Panen error:', err);
     res.status(500).json({ error: 'Gagal memproses panen.' });
+  }
+});
+
+// ==============================
+// TIMELINE PERTUMBUHAN TANAMAN
+// ==============================
+
+// GET /api/tanaman/:id/timeline
+router.get('/:id/timeline', async (req, res) => {
+  try {
+    const timelines = await db.select()
+      .from(tanamanTimeline)
+      .where(eq(tanamanTimeline.tanamanId, parseInt(req.params.id)))
+      .orderBy(desc(tanamanTimeline.date), desc(tanamanTimeline.createdAt));
+    res.json(timelines);
+  } catch (err) {
+    console.error('Get timeline error:', err);
+    res.status(500).json({ error: 'Gagal mengambil timeline tanaman.' });
+  }
+});
+
+// POST /api/tanaman/:id/timeline
+router.post('/:id/timeline', async (req, res) => {
+  try {
+    const { title, description, imageUrl, date } = req.body;
+    
+    // Pastikan tanaman ini milik user
+    const [crop] = await db.select().from(tanaman)
+      .where(and(eq(tanaman.id, parseInt(req.params.id)), eq(tanaman.userId, req.user.id)));
+      
+    if (!crop) return res.status(404).json({ error: 'Tanaman tidak ditemukan.' });
+
+    const [newTimeline] = await db.insert(tanamanTimeline).values({
+      tanamanId: crop.id,
+      title,
+      description,
+      imageUrl,
+      date: date || new Date().toISOString().split('T')[0]
+    }).returning();
+
+    res.status(201).json(newTimeline);
+  } catch (err) {
+    console.error('Create timeline error:', err);
+    res.status(500).json({ error: 'Gagal menambahkan timeline.' });
+  }
+});
+
+// DELETE /api/tanaman/:id/timeline/:timelineId
+router.delete('/:id/timeline/:timelineId', async (req, res) => {
+  try {
+    const [deleted] = await db.delete(tanamanTimeline)
+      .where(eq(tanamanTimeline.id, parseInt(req.params.timelineId)))
+      .returning();
+      
+    if (!deleted) return res.status(404).json({ error: 'Timeline tidak ditemukan.' });
+    
+    res.json({ message: 'Timeline dihapus.' });
+  } catch (err) {
+    console.error('Delete timeline error:', err);
+    res.status(500).json({ error: 'Gagal menghapus timeline.' });
   }
 });
 

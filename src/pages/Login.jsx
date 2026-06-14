@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Leaf, Lock, Mail, ArrowRight, Loader } from 'lucide-react';
-import { loginAPI, setAuth } from '../utils/api';
+import { loginAPI, setAuth, getEdukasi } from '../utils/api';
+import { BookOpen } from 'lucide-react';
 import './Login.css';
 
 export default function Login() {
@@ -9,7 +10,26 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [articles, setArticles] = useState([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    getEdukasi().then(data => {
+      if (data && data.length > 0) {
+        setArticles(data);
+      }
+    }).catch(err => console.error("Gagal load edukasi:", err));
+  }, []);
+
+  // Slider effect
+  useEffect(() => {
+    if (articles.length === 0) return;
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % articles.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [articles]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -18,7 +38,6 @@ export default function Login() {
 
     try {
       const data = await loginAPI(email, password);
-      // Blokir admin dari login petani
       if (data.user.role === 'admin') {
         throw new Error('Akses ditolak. Harap gunakan halaman khusus admin. (/admin/login)');
       }
@@ -38,17 +57,48 @@ export default function Login() {
           <Leaf className="brand-icon" size={32} />
           <h1 className="brand-title">Tani.Smart</h1>
         </div>
-        <div className="left-content">
-          <h2 className="left-headline">Masa Depan<br/>Pertanian Ada<br/><span className="text-gradient">Di Tangan Anda</span></h2>
-          <p className="left-sub">Kelola lahan, pantau tanaman, dan tingkatkan hasil panen dengan teknologi presisi yang dirancang khusus untuk petani modern.</p>
+        
+        {/* Educational Slider */}
+        <div className="left-content slider-container">
+          <div className="slides-wrapper" style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
+            {articles.map((article, idx) => {
+              const getImageUrl = (url) => url ? (url.startsWith('data:') || url.startsWith('http') ? url : `http://localhost:5000${url}`) : '';
+              
+              return (
+                <div key={idx} className="slide-item">
+                  <div className="slide-image-wrapper">
+                    {article.link ? (
+                      <a href={article.link} target="_blank" rel="noopener noreferrer" className="slide-link" title="Klik untuk membaca artikel selengkapnya">
+                        {article.imageUrl ? <img src={getImageUrl(article.imageUrl)} alt={article.title} className="slide-image" /> : <div style={{width:'100%', height:'100%', background:'rgba(255,255,255,0.05)', display:'flex', alignItems:'center', justifyContent:'center'}}><BookOpen size={48} color="rgba(255,255,255,0.3)"/></div>}
+                      </a>
+                    ) : (
+                      article.imageUrl ? <img src={getImageUrl(article.imageUrl)} alt={article.title} className="slide-image" /> : <div style={{width:'100%', height:'100%', background:'rgba(255,255,255,0.05)', display:'flex', alignItems:'center', justifyContent:'center'}}><BookOpen size={48} color="rgba(255,255,255,0.3)"/></div>
+                    )}
+                  </div>
+                  <h2 className="left-headline">{article.title}</h2>
+                  <p className="left-sub">{(article.content || '').substring(0, 150)}...</p>
+                </div>
+              );
+            })}
+          </div>
+          <div className="slider-dots">
+            {articles.map((_, idx) => (
+              <span 
+                key={idx} 
+                className={`dot ${currentSlide === idx ? 'active' : ''}`}
+                onClick={() => setCurrentSlide(idx)}
+              ></span>
+            ))}
+          </div>
         </div>
+
         <div className="login-footer">
           <p>&copy; 2026 Tani.Smart System</p>
         </div>
-        {/* Decorative elements */}
         <div className="blob blob-1"></div>
         <div className="blob blob-2"></div>
       </div>
+      
       <div className="login-split login-right">
         <div className="login-form-wrapper glass-panel">
           <div className="form-header">

@@ -8,6 +8,7 @@ import './Layout.css';
 export default function Layout() {
   const navigate = useNavigate();
   const [checking, setChecking] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     const checkStatus = async () => {
@@ -41,9 +42,13 @@ export default function Layout() {
 
   return (
     <div className="layout-container">
-      <Sidebar />
+      <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+      {/* Mobile overlay */}
+      {isSidebarOpen && (
+        <div className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)}></div>
+      )}
       <div className="layout-main">
-        <Topbar />
+        <Topbar toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
         <main className="layout-content">
           <Outlet />
         </main>

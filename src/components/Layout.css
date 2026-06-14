@@ -19,3 +19,26 @@
   padding: 2rem;
   padding-bottom: 4rem; /* For extra scrolling space */
 }
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 15;
+  backdrop-filter: blur(2px);
+}
+
+@media (max-width: 900px) {
+  .layout-content {
+    padding: 1rem;
+    padding-bottom: 5rem;
+  }
+  
+  .sidebar-overlay {
+    display: block;
+  }
+}

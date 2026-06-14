@@ -1,11 +1,11 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { ShieldCheck, LayoutDashboard, Users, Map, Sprout, Package, Calendar, BookOpen, MessageSquare, Settings, LogOut, ArrowLeft, Bug } from 'lucide-react';
+import { ShieldCheck, LayoutDashboard, Users, Map, Sprout, Package, Calendar, BookOpen, MessageSquare, Settings, LogOut, ArrowLeft, Bug, X } from 'lucide-react';
 import './AdminSidebar.css';
 
 import { clearAuth } from '../utils/api';
 
-export default function AdminSidebar() {
+export default function AdminSidebar({ isOpen, setIsOpen }) {
   const navigate = useNavigate();
   
   const mainNavItems = [
@@ -32,17 +32,30 @@ export default function AdminSidebar() {
     navigate('/login');
   };
 
+  const closeSidebar = () => {
+    if (setIsOpen) setIsOpen(false);
+  };
+
   return (
-    <aside className="admin-sidebar shadow-lg">
-      <div className="admin-sidebar-brand">
-        <ShieldCheck className="brand-icon text-emerald" size={28} />
-        <h2>Tani.Admin</h2>
+    <aside className={`admin-sidebar shadow-lg ${isOpen ? 'open' : ''}`}>
+      <div className="admin-sidebar-brand" style={{ justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <ShieldCheck className="brand-icon text-emerald" size={28} />
+          <h2>Tani.Admin</h2>
+        </div>
+        <button 
+          className="btn-icon mobile-close-btn" 
+          onClick={closeSidebar}
+          style={{ color: '#aebacd' }}
+        >
+          <X size={22} />
+        </button>
       </div>
 
       <nav className="admin-sidebar-nav custom-scrollbar">
         <div className="nav-divider">OVERVIEW</div>
         {mainNavItems.map((item) => (
-          <NavLink key={item.path} to={item.path} end={item.path === '/admin'} className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}>
+          <NavLink key={item.path} to={item.path} end={item.path === '/admin'} className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`} onClick={closeSidebar}>
             <item.icon size={20} />
             <span>{item.name}</span>
           </NavLink>
@@ -50,7 +63,7 @@ export default function AdminSidebar() {
         
         <div className="nav-divider">KONTEN</div>
         {contentNavItems.map((item) => (
-          <NavLink key={item.path} to={item.path} className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}>
+          <NavLink key={item.path} to={item.path} className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`} onClick={closeSidebar}>
             <item.icon size={20} />
             <span>{item.name}</span>
           </NavLink>
@@ -58,7 +71,7 @@ export default function AdminSidebar() {
 
         <div className="nav-divider">SISTEM</div>
         {systemNavItems.map((item) => (
-          <NavLink key={item.path} to={item.path} className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}>
+          <NavLink key={item.path} to={item.path} className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`} onClick={closeSidebar}>
             <item.icon size={20} />
             <span>{item.name}</span>
           </NavLink>
@@ -66,7 +79,7 @@ export default function AdminSidebar() {
       </nav>
 
       <div className="admin-sidebar-footer">
-        <button className="admin-btn-back" onClick={() => navigate('/dashboard')}>
+        <button className="admin-btn-back" onClick={() => { closeSidebar(); navigate('/dashboard'); }}>
           <ArrowLeft size={18} /> Ke Panel Petani
         </button>
       </div>

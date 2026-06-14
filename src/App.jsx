@@ -29,6 +29,7 @@ import AdminEdukasi from './pages/admin/AdminEdukasi';
 import AdminKonsultasi from './pages/admin/AdminKonsultasi';
 import AdminSettings from './pages/admin/AdminSettings';
 import AdminBugReports from './pages/admin/AdminBugReports';
+import AdminUserDetail from './pages/admin/AdminUserDetail';
 
 export default function App() {
   return (
@@ -36,6 +37,7 @@ export default function App() {
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<Login />} />
       <Route path="/admin/login" element={<AdminLogin />} />
+      <Route path="/login/admin" element={<Navigate to="/admin/login" replace />} />
       <Route path="/register" element={<Register />} />
       <Route path="/maintenance" element={<Maintenance />} />
       
@@ -59,6 +61,7 @@ export default function App() {
         <Route index element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="users" element={<AdminUsers />} />
+        <Route path="users/:id" element={<AdminUserDetail />} />
         <Route path="lahan" element={<AdminLahan />} />
         <Route path="tanaman" element={<AdminTanaman />} />
         <Route path="inventori" element={<AdminInventori />} />

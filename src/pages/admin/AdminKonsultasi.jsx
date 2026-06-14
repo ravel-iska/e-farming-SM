@@ -146,7 +146,7 @@ export default function AdminKonsultasi() {
                 <label>Bidang Fokus</label>
                 <input type="text" className="form-input" value={form.focus} onChange={e => setForm({...form, focus: e.target.value})} placeholder="Ahli Hama & Penyakit" />
               </div>
-              <div className="form-row" style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+              <div className="form-row" style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginTop: '1rem' }}>
                 <div className="form-group" style={{ flex: 1 }}>
                   <label>Emoji Avatar</label>
                   <input type="text" className="form-input" value={form.emoji} onChange={e => setForm({...form, emoji: e.target.value})} placeholder="👨‍🌾" />
@@ -156,7 +156,7 @@ export default function AdminKonsultasi() {
                   <input type="color" style={{ width: '100%', height: '42px', border: 'none', background: 'transparent' }} value={form.color} onChange={e => setForm({...form, color: e.target.value})} />
                 </div>
               </div>
-              <div className="form-row" style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+              <div className="form-row" style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginTop: '1rem' }}>
                 <div className="form-group" style={{ flex: 1 }}>
                   <label>Nomor WhatsApp</label>
                   <input type="text" className="form-input" value={form.wa} onChange={e => setForm({...form, wa: e.target.value})} placeholder="628123..." />

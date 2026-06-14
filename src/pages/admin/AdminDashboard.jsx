@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Map, Sprout, MessageSquare, TrendingUp, Activity, Shield, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Users, Map, Sprout, MessageSquare, TrendingUp, Activity, Shield, Clock, Banknote } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { getAdminStats } from '../../utils/api';
+import { getAdminStats, getAdminHistory } from '../../utils/api';
 
 const activityData = [
   { name: 'Sen', users: 4 }, { name: 'Sel', users: 7 }, { name: 'Rab', users: 5 },
@@ -11,15 +12,22 @@ const activityData = [
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({ users: 0, lahan: 0, tanaman: 0, pakar: 0, recentUsers: [] });
+  const [transaksi, setTransaksi] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => { fetchStats(); }, []);
+  useEffect(() => { fetchStats(); fetchTransaksi(); }, []);
 
   const fetchStats = async () => {
     try { setStats(await getAdminStats()); }
     catch (err) { console.error(err); }
     finally { setLoading(false); }
+  };
+
+  const fetchTransaksi = async () => {
+    try { setTransaksi(await getAdminHistory()); }
+    catch (err) { console.error(err); }
   };
 
   if (loading) return (
@@ -155,7 +163,7 @@ export default function AdminDashboard() {
                         <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--emerald-muted)', color: 'var(--emerald-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.8rem' }}>
                           {user.name.charAt(0)}
                         </div>
-                        <strong>{user.name}</strong>
+                        <button onClick={() => navigate(`/admin/users/${user.id}`)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--emerald-primary)', fontWeight: 600, padding: 0, fontSize: 'inherit' }}>{user.name} ↗</button>
                       </div>
                     </td>
                     <td className="text-muted">{user.email}</td>
@@ -166,6 +174,56 @@ export default function AdminDashboard() {
               </tbody>
             </table>
           </div>
+        </div>
+      </div>
+
+      {/* Riwayat Transaksi */}
+      <div className="admin-card" style={{ marginTop: '1.5rem' }}>
+        <div className="admin-card-header">
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Banknote size={18} className="text-emerald" /> Riwayat Transaksi Terbaru</h3>
+          <button onClick={() => navigate('/admin/inventori')} style={{ background: 'transparent', border: 'none', color: 'var(--emerald-primary)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>Lihat Semua →</button>
+        </div>
+        <div className="admin-card-body" style={{ padding: 0 }}>
+          {transaksi.length === 0 ? (
+            <p style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Belum ada riwayat transaksi.</p>
+          ) : (
+            <div className="admin-table-container">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Tanggal</th>
+                    <th>Petani</th>
+                    <th>Tipe</th>
+                    <th>Barang</th>
+                    <th>Qty</th>
+                    <th>Harga Pasar / Unit</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {transaksi.slice(0, 10).map(t => (
+                    <tr key={t.id}>
+                      <td className="text-muted">{new Date(t.date).toLocaleDateString('id-ID')}</td>
+                      <td><strong>{t.userName}</strong></td>
+                      <td>
+                        <span style={{ padding: '3px 8px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 600, background: t.type === 'Jual' ? 'rgba(16,185,129,0.2)' : 'rgba(99,102,241,0.2)', color: t.type === 'Jual' ? 'var(--emerald-primary)' : '#818cf8' }}>
+                          {t.type === 'Jual' ? 'Petani Jual' : 'Petani Beli'}
+                        </span>
+                      </td>
+                      <td>{t.itemName}</td>
+                      <td>{t.quantity}</td>
+                      <td>Rp {Number(t.pricePerUnit).toLocaleString('id-ID')}</td>
+                      <td><strong>Rp {Number(t.totalNominal).toLocaleString('id-ID')}</strong></td>
+                      <td>
+                        <span style={{ padding: '3px 8px', borderRadius: '10px', fontSize: '0.75rem', background: t.status === 'Selesai' ? 'rgba(16,185,129,0.2)' : t.status === 'Pending' ? 'rgba(245,158,11,0.2)' : 'rgba(239,68,68,0.2)', color: t.status === 'Selesai' ? 'var(--emerald-primary)' : t.status === 'Pending' ? 'var(--warning)' : 'var(--danger)' }}>{t.status}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     </div>

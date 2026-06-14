@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently -n FRONTEND,BACKEND -c green,blue \"vite\" \"node backend/src/server.js\"",
+    "dev": "concurrently -n FRONTEND,BACKEND -c green,blue \"vite\" \"cd backend && node src/server.js\"",
     "dev:frontend": "vite",
     "dev:backend": "nodemon backend/src/server.js",
     "build": "vite build",
@@ -14,9 +14,11 @@
     "db:seed": "node backend/src/db/seed.js"
   },
   "dependencies": {
+    "leaflet": "^1.9.4",
     "lucide-react": "^1.8.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
+    "react-leaflet": "^5.0.0",
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.14.1",
     "recharts": "^3.8.1",

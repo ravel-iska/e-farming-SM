@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { PackageSearch, Plus, AlertTriangle, Edit3, Trash2, X, Search, Filter, Store, Wheat, FileClock, CheckCircle, XCircle } from 'lucide-react';
-import { getInventori, createInventori, updateInventori, deleteInventori, getAdminPengajuan, terimaPengajuan, tolakPengajuan } from '../../utils/api';
+import { PackageSearch, Plus, AlertTriangle, Edit3, Trash2, X, Search, Filter, Store, Wheat, FileClock, CheckCircle, XCircle, History } from 'lucide-react';
+import { getInventori, createInventori, updateInventori, deleteInventori, getAdminPengajuan, terimaPengajuan, tolakPengajuan, getAdminHistory } from '../../utils/api';
 
 const CATEGORIES = ['Pupuk', 'Benih', 'Pestisida', 'Alat Pertanian', 'Lainnya'];
 const STATUS_OPTIONS = ['Aman', 'Menipis', 'Kritis'];
@@ -9,6 +9,7 @@ export default function AdminInventori() {
   const [activeTab, setActiveTab] = useState('suplai'); // 'suplai', 'panen', 'pengajuan'
   const [inventory, setInventory] = useState([]);
   const [pengajuan, setPengajuan] = useState([]);
+  const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   
   const [showModal, setShowModal] = useState(false);
@@ -16,13 +17,17 @@ export default function AdminInventori() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCat, setFilterCat] = useState('Semua');
   
-  const [form, setForm] = useState({ item: '', category: 'Pupuk', stock: '', unit: 'kg', status: 'Aman' });
+  const [form, setForm] = useState({ item: '', category: 'Pupuk', stock: '', unit: 'kg', status: 'Aman', imageUrl: '' });
+  const [imagePreview, setImagePreview] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+
+  const getImageUrl = (url) => url ? (url.startsWith('data:') || url.startsWith('http') ? url : `http://localhost:5000${url}`) : '';
 
   useEffect(() => { 
     fetchInventori(); 
     fetchPengajuan();
+    fetchHistory();
   }, []);
 
   const fetchInventori = async () => {
@@ -33,16 +38,33 @@ export default function AdminInventori() {
     try { setPengajuan(await getAdminPengajuan()); } catch (err) { console.error(err); }
   };
 
+  const fetchHistory = async () => {
+    try { setHistory(await getAdminHistory()); } catch (err) { console.error(err); }
+  };
+
   const openAdd = () => { 
     setEditItem(null); 
-    setForm({ item: '', category: activeTab === 'panen' ? 'Hasil Panen' : 'Pupuk', stock: '', unit: 'kg', status: 'Aman' }); 
+    setForm({ item: '', category: activeTab === 'panen' ? 'Hasil Panen' : 'Pupuk', stock: '', unit: 'kg', status: 'Aman', imageUrl: '' }); 
+    setImagePreview(null);
     setShowModal(true); 
   };
   
   const openEdit = (inv) => { 
     setEditItem(inv); 
-    setForm({ item: inv.item, category: inv.category, stock: inv.stock, unit: inv.unit, status: inv.status }); 
+    setForm({ item: inv.item, category: inv.category, stock: inv.stock, unit: inv.unit, status: inv.status, imageUrl: inv.imageUrl || '' }); 
+    setImagePreview(getImageUrl(inv.imageUrl) || null);
     setShowModal(true); 
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
+      setForm(prev => ({ ...prev, imageUrl: reader.result }));
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSave = async () => {
@@ -55,6 +77,7 @@ export default function AdminInventori() {
         await createInventori({ ...form, stock: Number(form.stock) });
       }
       setShowModal(false);
+      setImagePreview(null);
       fetchInventori();
     } catch (err) { alert(err.message); }
     finally { setSaving(false); }
@@ -71,6 +94,7 @@ export default function AdminInventori() {
       else await tolakPengajuan(id);
       fetchPengajuan();
       fetchInventori();
+      fetchHistory();
     } catch (err) { alert(err.message); }
   };
 
@@ -88,6 +112,7 @@ export default function AdminInventori() {
   });
 
   const filteredPengajuan = pengajuan.filter(p => p.itemName.toLowerCase().includes(searchQuery.toLowerCase()) || p.userName.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredHistory = history.filter(p => p.itemName.toLowerCase().includes(searchQuery.toLowerCase()) || p.userName.toLowerCase().includes(searchQuery.toLowerCase()));
 
   const totalItems = currentTabInventory.length;
   const criticalItems = currentTabInventory.filter(i => i.status === 'Kritis' || i.status === 'Menipis').length;
@@ -100,7 +125,7 @@ export default function AdminInventori() {
           <h2>Pusat Logistik & Inventori</h2>
           <p className="text-muted">Kelola katalog barang suplai, tampung panen, dan validasi penjualan Petani.</p>
         </div>
-        {activeTab !== 'pengajuan' && (
+        {activeTab !== 'pengajuan' && activeTab !== 'history' && (
           <button className="btn-primary" onClick={openAdd} style={{ padding: '0.6rem 1.2rem', display: 'flex', gap: '0.5rem', background: 'var(--primary)' }}>
             <Plus size={18} /> Tambah Barang
           </button>
@@ -129,9 +154,16 @@ export default function AdminInventori() {
         >
           <FileClock size={20} /> Pengajuan Masuk {pengajuan.length > 0 && <span style={{ background: 'red', color: 'white', borderRadius: '50%', padding: '2px 6px', fontSize: '10px', marginLeft: '5px' }}>{pengajuan.length}</span>}
         </button>
+        <button 
+          className={`btn-tab ${activeTab === 'history' ? 'active' : ''}`} 
+          onClick={() => { setActiveTab('history'); setFilterCat('Semua'); }}
+          style={{ flex: 1, padding: '1rem', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyItems: 'center', gap: '8px', background: activeTab === 'history' ? 'rgba(99, 102, 241, 0.8)' : 'rgba(255,255,255,0.05)', color: activeTab === 'history' ? 'white' : 'var(--text-secondary)' }}
+        >
+          <History size={20} /> Riwayat Transaksi
+        </button>
       </div>
 
-      {activeTab !== 'pengajuan' && (
+      {activeTab !== 'pengajuan' && activeTab !== 'history' && (
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
         <div className="stat-card glass-panel" style={{ padding: '1.5rem', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <PackageSearch size={32} color="var(--primary)" />
@@ -179,7 +211,8 @@ export default function AdminInventori() {
                 <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                   <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>Tanggal</th>
                   <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>Petani</th>
-                  <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>Barang Jual</th>
+                  <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>Tipe</th>
+                  <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>Barang</th>
                   <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>Kuantitas</th>
                   <th style={{ padding: '1rem', color: 'var(--text-secondary)', textAlign: 'center' }}>Total Rp</th>
                   <th style={{ padding: '1rem', color: 'var(--text-secondary)', textAlign: 'center' }}>Aksi Persetujuan</th>
@@ -190,6 +223,11 @@ export default function AdminInventori() {
                   <tr key={p.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                     <td style={{ padding: '1rem' }}>{new Date(p.date).toLocaleDateString('id-ID')}</td>
                     <td style={{ padding: '1rem' }}><strong>{p.userName}</strong></td>
+                    <td style={{ padding: '1rem' }}>
+                      <span style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '12px', background: p.type === 'Jual' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(99, 102, 241, 0.2)', color: p.type === 'Jual' ? 'var(--emerald-primary)' : '#818cf8' }}>
+                        {p.type === 'Jual' ? 'Petani Jual' : 'Petani Beli'}
+                      </span>
+                    </td>
                     <td style={{ padding: '1rem' }}>{p.itemName}</td>
                     <td style={{ padding: '1rem' }}>{p.quantity} Kg</td>
                     <td style={{ padding: '1rem', textAlign: 'center' }}>Rp {Number(p.totalNominal).toLocaleString('id-ID')}</td>
@@ -202,6 +240,48 @@ export default function AdminInventori() {
                           <XCircle size={16} /> Tolak
                         </button>
                       </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )
+        ) : activeTab === 'history' ? (
+          filteredHistory.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '4rem 1rem' }}>
+              <History size={48} style={{ opacity: 0.3, margin: '0 auto 1rem', color: '#6366f1' }} />
+              <h3 style={{ color: 'var(--text-secondary)' }}>Belum ada riwayat transaksi</h3>
+            </div>
+          ) : (
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                  <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>Tanggal</th>
+                  <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>Petani</th>
+                  <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>Tipe</th>
+                  <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>Barang</th>
+                  <th style={{ padding: '1rem', color: 'var(--text-secondary)' }}>Kuantitas</th>
+                  <th style={{ padding: '1rem', color: 'var(--text-secondary)', textAlign: 'center' }}>Total Rp</th>
+                  <th style={{ padding: '1rem', color: 'var(--text-secondary)', textAlign: 'center' }}>Status Akhir</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredHistory.map((p) => (
+                  <tr key={p.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                    <td style={{ padding: '1rem' }}>{new Date(p.date).toLocaleDateString('id-ID')}</td>
+                    <td style={{ padding: '1rem' }}><strong>{p.userName}</strong></td>
+                    <td style={{ padding: '1rem' }}>
+                      <span style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '12px', background: p.type === 'Jual' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(99, 102, 241, 0.2)', color: p.type === 'Jual' ? 'var(--emerald-primary)' : '#818cf8' }}>
+                        {p.type === 'Jual' ? 'Petani Jual' : 'Petani Beli'}
+                      </span>
+                    </td>
+                    <td style={{ padding: '1rem' }}>{p.itemName}</td>
+                    <td style={{ padding: '1rem' }}>{p.quantity} Kg</td>
+                    <td style={{ padding: '1rem', textAlign: 'center' }}>Rp {Number(p.totalNominal).toLocaleString('id-ID')}</td>
+                    <td style={{ padding: '1rem', textAlign: 'center' }}>
+                      <span style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '12px', background: p.status === 'Selesai' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)', color: p.status === 'Selesai' ? 'var(--emerald-primary)' : 'var(--danger)' }}>
+                        {p.status}
+                      </span>
                     </td>
                   </tr>
                 ))}
@@ -227,7 +307,14 @@ export default function AdminInventori() {
             <tbody>
               {filtered.map((inv) => (
                 <tr key={inv.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <td style={{ padding: '1rem' }}><strong>{inv.item}</strong></td>
+                  <td style={{ padding: '1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ width: '44px', height: '44px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                        {inv.imageUrl ? <img src={getImageUrl(inv.imageUrl)} alt={inv.item} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (inv.category === 'Hasil Panen' ? <Wheat size={24} color="rgba(255,255,255,0.5)" /> : <PackageSearch size={24} color="rgba(255,255,255,0.5)" />)}
+                      </div>
+                      <strong>{inv.item}</strong>
+                    </div>
+                  </td>
                   <td style={{ padding: '1rem' }}><span style={{ padding: '0.3rem 0.6rem', borderRadius: '20px', fontSize: '0.8rem', background: 'rgba(255,255,255,0.1)' }}>{inv.category}</span></td>
                   <td style={{ padding: '1rem' }}>{inv.stock} {inv.unit}</td>
                   <td style={{ padding: '1rem' }}>
@@ -250,12 +337,27 @@ export default function AdminInventori() {
 
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div className="modal-content glass-panel" onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-primary)', padding: '2rem', borderRadius: '12px', width: '90%', maxWidth: '500px' }}>
+          <div className="modal-content glass-panel" onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-primary)', padding: '2rem', borderRadius: '12px', width: '90%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto' }}>
             <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
               <h3>{editItem ? 'Edit Barang Pusat' : `Buat ${activeTab === 'panen' ? 'Pencatatan Panen' : 'Katalog Baru'}`}</h3>
               <button className="btn-icon" onClick={() => setShowModal(false)}><X size={20} /></button>
             </div>
             <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {/* Image Upload */}
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Foto Barang (Opsional)</label>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                  <div style={{ width: '80px', height: '80px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px dashed rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                    {imagePreview ? <img src={imagePreview} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <PackageSearch size={32} color="rgba(255,255,255,0.3)" />}
+                  </div>
+                  <div>
+                    <input type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} id="admin-inv-img-upload" />
+                    <label htmlFor="admin-inv-img-upload" style={{ cursor: 'pointer', padding: '8px 16px', background: 'rgba(16,185,129,0.15)', color: 'var(--emerald-primary)', borderRadius: '6px', fontSize: '0.85rem', display: 'inline-block' }}>📷 Pilih Foto</label>
+                    {imagePreview && <button onClick={() => { setImagePreview(null); setForm(prev => ({...prev, imageUrl: ''})); }} style={{ marginLeft: '8px', background: 'transparent', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '0.85rem' }}>✕ Hapus</button>}
+                  </div>
+                </div>
+              </div>
+
               <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Nama Barang</label>
                 <input type="text" value={form.item} onChange={e => setForm({ ...form, item: e.target.value })} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} placeholder="Contoh: Pupuk NPK / Jagung" />
@@ -296,7 +398,7 @@ export default function AdminInventori() {
             
             <div className="modal-footer" style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
               <button onClick={() => setShowModal(false)} style={{ flex: 1, padding: '0.8rem', borderRadius: '8px', background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', cursor: 'pointer' }}>Batal</button>
-              <button disabled={saving || !form.item.trim()} onClick={handleSave} style={{ flex: 1, padding: '0.8rem', borderRadius: '8px', background: 'var(--primary)', border: 'none', color: 'white', cursor: 'pointer', opacity: (saving || !form.item.trim()) ? 0.5 : 1 }}>
+              <button disabled={saving || !form.item.trim()} onClick={handleSave} style={{ flex: 1, padding: '0.8rem', borderRadius: '8px', background: 'var(--emerald-primary)', border: 'none', color: 'white', cursor: 'pointer', opacity: (saving || !form.item.trim()) ? 0.5 : 1 }}>
                 {saving ? 'Menyimpan...' : editItem ? 'Update' : 'Simpan'}
               </button>
             </div>

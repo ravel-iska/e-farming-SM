@@ -1,10 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { PackageSearch, Store, Home, Search, Filter, ShoppingCart, Banknote, Plus, Edit3, Trash2, X, AlertTriangle, FileClock } from 'lucide-react';
+import { PackageSearch, Store, Home, Search, Filter, ShoppingCart, Banknote, Plus, Edit3, Trash2, X, AlertTriangle, FileClock, Wheat } from 'lucide-react';
 import { getInventori, getKatalog, jualBarang, beliBarang, createInventori, updateInventori, deleteInventori, getRiwayatTransaksi } from '../utils/api';
 import './Inventori.css';
 
 const CATEGORIES = ['Pupuk', 'Benih', 'Pestisida', 'Alat Pertanian', 'Hasil Panen', 'Lainnya'];
 const STATUS_OPTIONS = ['Aman', 'Menipis', 'Kritis'];
+
+const getMarketPrice = (category) => {
+  const prices = {
+    'Pupuk': 5000,
+    'Benih': 20000,
+    'Pestisida': 15000,
+    'Alat Pertanian': 50000,
+    'Hasil Panen': 8000,
+    'Lainnya': 10000
+  };
+  return prices[category] || 10000;
+};
 
 export default function Inventori() {
   const [activeTab, setActiveTab] = useState('katalog'); // 'katalog', 'local', 'riwayat'
@@ -21,9 +33,12 @@ export default function Inventori() {
   
   const [showModal, setShowModal] = useState(false);
   const [editItem, setEditItem] = useState(null);
-  const [form, setForm] = useState({ item: '', category: 'Pupuk', stock: '', unit: 'kg', status: 'Aman' });
+  const [form, setForm] = useState({ item: '', category: 'Pupuk', stock: '', unit: 'kg', status: 'Aman', imageUrl: '' });
+  const [imagePreview, setImagePreview] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+
+  const getImageUrl = (url) => url ? (url.startsWith('data:') || url.startsWith('http') ? url : `http://localhost:5000${url}`) : '';
 
   
   useEffect(() => {
@@ -65,15 +80,15 @@ export default function Inventori() {
   };
 
   const handleTrade = async () => {
-    if (!tradeForm.quantity || !tradeForm.pricePerUnit) return;
+    if (!tradeForm.quantity) return;
     setSaving(true);
     try {
       if (tradeModal.type === 'Jual') {
-        await jualBarang(tradeModal.item.id, tradeForm.quantity, tradeForm.pricePerUnit);
-        alert('Pengajuan jual sukses! Stok Anda ditahan sementara menunggu konfirmasi Admin.');
+        await jualBarang(tradeModal.item.id, tradeForm.quantity, 0); // price is ignored by backend
+        alert('Pengajuan jual sukses! Menunggu konfirmasi Pusat Logistik.');
       } else {
-        await beliBarang(tradeModal.item.id, tradeForm.quantity, tradeForm.pricePerUnit);
-        alert('Barang berhasil dibeli dan masuk ke Gudang Anda!');
+        await beliBarang(tradeModal.item.id, tradeForm.quantity, 0); // price is ignored by backend
+        alert('Pengajuan pembelian sukses! Menunggu konfirmasi Pusat Logistik.');
       }
       setTradeModal(null);
       setTradeForm({ quantity: '', pricePerUnit: '' });
@@ -82,8 +97,19 @@ export default function Inventori() {
       finally { setSaving(false); }
   };
 
-  const openAdd = () => { setEditItem(null); setForm({ item: '', category: 'Pupuk', stock: '', unit: 'kg', status: 'Aman' }); setShowModal(true); };
-  const openEdit = (inv) => { setEditItem(inv); setForm({ item: inv.item, category: inv.category, stock: inv.stock, unit: inv.unit, status: inv.status }); setShowModal(true); };
+  const openAdd = () => { setEditItem(null); setForm({ item: '', category: 'Pupuk', stock: '', unit: 'kg', status: 'Aman', imageUrl: '' }); setImagePreview(null); setShowModal(true); };
+  const openEdit = (inv) => { setEditItem(inv); setForm({ item: inv.item, category: inv.category, stock: inv.stock, unit: inv.unit, status: inv.status, imageUrl: inv.imageUrl || '' }); setImagePreview(getImageUrl(inv.imageUrl) || null); setShowModal(true); };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
+      setForm(prev => ({ ...prev, imageUrl: reader.result }));
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSave = async () => {
     if (!form.item.trim()) return;
@@ -95,6 +121,7 @@ export default function Inventori() {
         await createInventori({ ...form, stock: Number(form.stock) });
       }
       setShowModal(false);
+      setImagePreview(null);
       fetchData();
     } catch (err) { alert(err.message); }
     finally { setSaving(false); }
@@ -231,7 +258,14 @@ export default function Inventori() {
             <tbody>
               {filtered.map((inv) => (
                 <tr key={inv.id}>
-                  <td className="item-name font-medium">{inv.item}</td>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                        {inv.imageUrl ? <img src={getImageUrl(inv.imageUrl)} alt={inv.item} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (inv.category === 'Hasil Panen' ? <Wheat size={20} color="rgba(255,255,255,0.5)" /> : <PackageSearch size={20} color="rgba(255,255,255,0.5)" />)}
+                      </div>
+                      <span className="item-name font-medium">{inv.item}</span>
+                    </div>
+                  </td>
                   <td><span className={`cat-badge ${(inv.category || '').toLowerCase().replace(' ', '-')}`}>{inv.category}</span></td>
                   <td className="stock-value">
                     <span className={(inv.stock <= 0) ? 'text-danger font-bold' : ''}>{inv.stock} {inv.unit}</span>
@@ -243,7 +277,7 @@ export default function Inventori() {
                         <button 
                           className="btn-primary" 
                           style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }} 
-                          onClick={() => { setTradeModal({ type: 'Beli', item: inv }); setTradeForm({ quantity: '', pricePerUnit: ''}); }}
+                          onClick={() => { setTradeModal({ type: 'Beli', item: inv }); setTradeForm({ quantity: '' }); }}
                           disabled={inv.stock <= 0}
                         >
                           <ShoppingCart size={14} /> Beli
@@ -296,32 +330,30 @@ export default function Inventori() {
                   min="1"
                 />
               </div>
-              <div className="form-group">
-                <label>Harga Kesepakatan Per {tradeModal.item.unit} (Rp)</label>
-                <input 
-                  type="number" 
-                  value={tradeForm.pricePerUnit} 
-                  onChange={e => setTradeForm({ ...tradeForm, pricePerUnit: e.target.value })} 
-                  className="form-input" 
-                  placeholder="Contoh: 15000"
-                />
+              <div className="form-group" style={{ marginTop: '1rem' }}>
+                <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <span className="text-muted" style={{ display: 'block', marginBottom: '0.5rem' }}>Estimasi Harga Pasar:</span>
+                  <strong style={{ fontSize: '1.2rem', color: 'var(--emerald-primary)' }}>
+                    Rp {getMarketPrice(tradeModal.item.category).toLocaleString('id-ID')} / {tradeModal.item.unit}
+                  </strong>
+                </div>
               </div>
               
-              {tradeForm.quantity && tradeForm.pricePerUnit && (
+              {tradeForm.quantity && (
                 <div style={{ marginTop: '1rem', background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '8px' }}>
                   <span className="text-muted">Total Transaksi:</span>
                   <h3 style={{ color: tradeModal.type === 'Jual' ? 'var(--emerald-primary)' : 'var(--danger)', marginTop: '5px' }}>
-                    Rp {(Number(tradeForm.quantity) * Number(tradeForm.pricePerUnit)).toLocaleString('id-ID')}
+                    Rp {(Number(tradeForm.quantity) * getMarketPrice(tradeModal.item.category)).toLocaleString('id-ID')}
                   </h3>
                   <small className="text-muted">
-                    {tradeModal.type === 'Jual' ? 'Status: Pending & Menunggu Konfirmasi' : 'Meningkatkan Beban (Expense)'}
+                    {tradeModal.type === 'Jual' ? 'Status: Pending & Menunggu Konfirmasi' : 'Status: Pending & Menunggu Konfirmasi'}
                   </small>
                 </div>
               )}
             </div>
             <div className="modal-footer" style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem' }}>
               <button className="btn-secondary" onClick={() => setTradeModal(null)}>Batal</button>
-              <button className="btn-primary" onClick={handleTrade} disabled={saving || !tradeForm.quantity || !tradeForm.pricePerUnit} style={{ background: tradeModal.type === 'Jual' ? 'var(--emerald-primary)' : 'var(--primary)' }}>
+              <button className="btn-primary" onClick={handleTrade} disabled={saving || !tradeForm.quantity} style={{ background: tradeModal.type === 'Jual' ? 'var(--emerald-primary)' : 'var(--info)' }}>
                 {saving ? 'Memproses...' : `Konfirmasi ${tradeModal.type}`}
               </button>
             </div>
@@ -338,7 +370,21 @@ export default function Inventori() {
               <button className="btn-icon" onClick={() => setShowModal(false)}><X size={20} /></button>
             </div>
             <div className="modal-body" style={{ textAlign: 'left' }}>
+              {/* Image Upload */}
               <div className="form-group">
+                <label>Foto Barang (Opsional)</label>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                  <div style={{ width: '80px', height: '80px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px dashed rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                    {imagePreview ? <img src={imagePreview} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <PackageSearch size={32} color="rgba(255,255,255,0.3)" />}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <input type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} id="inv-img-upload" />
+                    <label htmlFor="inv-img-upload" style={{ cursor: 'pointer', padding: '8px 16px', background: 'var(--emerald-muted)', color: 'var(--emerald-primary)', borderRadius: '6px', fontSize: '0.85rem', display: 'inline-block' }}>📷 Pilih Foto</label>
+                    {imagePreview && <button onClick={() => { setImagePreview(null); setForm(prev => ({...prev, imageUrl: ''})); }} style={{ marginLeft: '8px', background: 'transparent', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '0.85rem' }}>✕ Hapus</button>}
+                  </div>
+                </div>
+              </div>
+              <div className="form-group" style={{ marginTop: '1rem' }}>
                 <label>Nama Barang</label>
                 <input type="text" className="form-input" value={form.item} onChange={e => setForm({ ...form, item: e.target.value })} placeholder="Mis: Pupuk NP" />
               </div>

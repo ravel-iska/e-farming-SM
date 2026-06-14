@@ -48,15 +48,22 @@
 
 .left-content {
   max-width: 500px;
-  margin-top: -10vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
 }
 
 .left-headline {
-  font-size: 4rem;
-  line-height: 1.1;
+  font-size: 2.5rem;
+  line-height: 1.2;
   font-weight: 700;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   color: var(--text-primary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .left-sub {
@@ -231,20 +238,29 @@
 @media (max-width: 900px) {
   .login-container {
     flex-direction: column;
+    height: auto;
   }
   .login-left {
     padding: 2rem;
-    min-height: 40vh;
+    flex: none;
+    height: auto;
+    min-height: auto;
+    justify-content: center;
   }
   .left-content {
-    margin-top: 0;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
   }
   .left-headline {
-    font-size: 2.5rem;
+    font-size: 2rem;
+  }
+  .slide-image-wrapper {
+    height: 200px;
   }
   .login-right {
     padding: 2rem 1rem;
-    align-items: flex-start;
+    align-items: center;
+    justify-content: center;
   }
 }
 
@@ -381,3 +397,14 @@
 
 
 
+
+/* Slider Styles */
+.slider-container { overflow: hidden; width: 100%; position: relative; }
+.slides-wrapper { display: flex; transition: transform 0.5s ease-in-out; width: 100%; }
+.slide-item { flex: 0 0 100%; min-width: 100%; padding-right: 2rem; box-sizing: border-box; }
+.slide-icon-wrapper { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; }
+.slide-image-wrapper { width: 100%; height: 250px; border-radius: 12px; overflow: hidden; margin-bottom: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+.slide-image { width: 100%; height: 100%; object-fit: cover; }
+.slider-dots { display: flex; gap: 8px; margin-top: 2rem; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.3); cursor: pointer; transition: all 0.3s ease; }
+.dot.active { width: 24px; background: var(--primary); border-radius: 4px; }
