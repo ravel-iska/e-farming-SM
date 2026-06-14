@@ -309,3 +309,10 @@ const api = {
 };
 
 export default api;
+
+export const getImageUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('data:') || url.startsWith('http')) return url;
+  const baseUrl = API_BASE.replace(/\/api$/, '');
+  return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+};

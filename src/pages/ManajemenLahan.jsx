@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MapPin, Plus, Search, Layers, X, Edit3, Trash2, Droplets, Ruler, Camera, Navigation } from 'lucide-react';
-import { getLahan, createLahan, updateLahan, deleteLahan } from '../utils/api';
+import { getLahan, createLahan, updateLahan, deleteLahan, getImageUrl } from '../utils/api';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';

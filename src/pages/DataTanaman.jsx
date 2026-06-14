@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Watch, CheckCircle2, AlertCircle, Plus, X, Edit3, Trash2, Leaf, PackagePlus, History, Camera, Image as ImageIcon } from 'lucide-react';
-import { getTanaman, createTanaman, updateTanaman, deleteTanaman, getLahan, panenTanaman, getTanamanTimeline, createTanamanTimeline } from '../utils/api';
+import { getTanaman, createTanaman, updateTanaman, deleteTanaman, getLahan, panenTanaman, getTanamanTimeline, createTanamanTimeline, getImageUrl } from '../utils/api';
 import './DataTanaman.css';
 
 const PLANT_ICONS = { 'Padi': '🌾', 'Jagung': '🌽', 'Kedelai': '🌱', 'Tomat': '🍅', 'Cabai': '🌶️', 'Semangka': '🍉', 'Melon': '🍈' };
@@ -158,7 +158,7 @@ export default function DataTanaman() {
               <div className="crop-header">
                 <div className="crop-title-area" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{ width: '48px', height: '48px', borderRadius: '8px', overflow: 'hidden', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {crop.imageUrl ? <img src={crop.imageUrl} alt={crop.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <Leaf size={24} color="rgba(255,255,255,0.6)" />}
+                    {crop.imageUrl ? <img src={getImageUrl(crop.imageUrl)} alt={crop.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <Leaf size={24} color="rgba(255,255,255,0.6)" />}
                   </div>
                   <div>
                     <h3>{crop.name}</h3>
@@ -231,7 +231,7 @@ export default function DataTanaman() {
                 <label>Foto Utama Tanaman (Opsional)</label>
                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginTop: '0.5rem' }}>
                   <div style={{ width: '80px', height: '80px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1px dashed rgba(255,255,255,0.2)' }}>
-                    {form.imageUrl ? <img src={form.imageUrl} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <ImageIcon size={24} style={{ opacity: 0.5 }} />}
+                    {form.imageUrl ? <img src={getImageUrl(form.imageUrl)} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <ImageIcon size={24} style={{ opacity: 0.5 }} />}
                   </div>
                   <label className="btn-secondary" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <Camera size={16} /> Pilih Foto
