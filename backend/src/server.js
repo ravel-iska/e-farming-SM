@@ -112,9 +112,18 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Tani.Smart API is running 🌱', maintenance: global.MAINTENANCE_MODE });
 });
 
-// Handler 404 (Pencegah respons HTML)
-app.use((req, res, next) => {
+// Serve static frontend files if in production (or if dist folder exists)
+const distPath = path.join(__dirname, '../../dist');
+app.use(express.static(distPath));
+
+// Handler 404 (Pencegah respons HTML untuk API)
+app.use('/api', (req, res, next) => {
   res.status(404).json({ error: `Rute API '${req.url}' tidak ditemukan.` });
+});
+
+// Catch-all route to serve React app for non-API requests
+app.get('*', (req, res) => {
+  res.sendFile(path.join(distPath, 'index.html'));
 });
 
 // Global Error Handler (Pencegah respons DOCTYPE HTML saat syntax error)
