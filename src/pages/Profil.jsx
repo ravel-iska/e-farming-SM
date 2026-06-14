@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { User, Mail, Shield, Calendar, Save, Lock, Eye, EyeOff, CheckCircle2, Camera, Trash2 } from 'lucide-react';
-import { getUser, setAuth } from '../utils/api';
+import api, { getUser, setAuth, getImageUrl } from '../utils/api';
 import './Ekstensi.css';
 
 export default function Profil() {
@@ -44,22 +44,13 @@ export default function Profil() {
   const handleSaveProfile = async () => {
     setSaving(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:5000/api' : '/api')}/auth/profile`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ name, photoUrl })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setAuth(localStorage.getItem('token'), { ...user, name: data.name, photoUrl: data.photoUrl });
-        setSaved(true);
-        setTimeout(() => setSaved(false), 3000);
-      }
+      const data = await api.put('/auth/profile', { name, photoUrl });
+      setAuth(localStorage.getItem('token'), { ...user, name: data.name, photoUrl: data.photoUrl });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
     } catch (err) {
       console.error(err);
+      alert(err.message || 'Gagal menyimpan profil.');
     } finally {
       setSaving(false);
     }
@@ -70,23 +61,11 @@ export default function Profil() {
     if (newPw.length < 6) { setPwMsg('Password minimal 6 karakter.'); return; }
     setPwMsg('');
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:5000/api' : '/api')}/auth/change-password`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ oldPassword: oldPw, newPassword: newPw })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setPwMsg('✅ Password berhasil diubah!');
-        setOldPw(''); setNewPw(''); setConfirmPw('');
-      } else {
-        setPwMsg(data.error || 'Gagal mengubah password.');
-      }
+      await api.put('/auth/change-password', { oldPassword: oldPw, newPassword: newPw });
+      setPwMsg('✅ Password berhasil diubah!');
+      setOldPw(''); setNewPw(''); setConfirmPw('');
     } catch (err) {
-      setPwMsg('Gagal terhubung ke server.');
+      setPwMsg(err.message || 'Gagal mengubah password.');
     }
   };
 
@@ -112,7 +91,7 @@ export default function Profil() {
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '2rem' }}>
             <div style={{ position: 'relative' }}>
               {photoPreview ? (
-                <img src={photoPreview} alt="Foto Profil" style={{
+                <img src={getImageUrl(photoPreview)} alt="Foto Profil" style={{
                   width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover',
                   border: '4px solid var(--emerald-primary)', boxShadow: '0 0 20px rgba(16, 185, 129, 0.3)'
                 }} />
