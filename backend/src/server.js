@@ -162,19 +162,35 @@ process.on('uncaughtException', (err) => {
   console.error('🚨 Uncaught Exception:', err);
 });
 
+// Track which userIds admin is actively chatting with (disables auto-reply)
+export const activeAdminSessions = new Set();
+
 // WebSocket Configuration
 io.on('connection', (socket) => {
   console.log(`🔌 Client connected: ${socket.id}`);
 
-  // User/Admin join room
+  // User joins their private room
   socket.on('join', (userId) => {
     socket.join(`user_${userId}`);
-    console.log(`User/Admin joined room: user_${userId}`);
+    console.log(`User joined room: user_${userId}`);
   });
 
+  // Admin joins global admin room
   socket.on('join_admin', () => {
     socket.join('admin_room');
     console.log('Admin joined admin_room');
+  });
+
+  // Admin opened a specific user chat → disable auto-reply for that user
+  socket.on('admin_viewing', (userId) => {
+    activeAdminSessions.add(Number(userId));
+    console.log(`Admin viewing user_${userId} → auto-reply disabled`);
+  });
+
+  // Admin closed or switched chat → re-enable auto-reply
+  socket.on('admin_left', (userId) => {
+    activeAdminSessions.delete(Number(userId));
+    console.log(`Admin left user_${userId} → auto-reply re-enabled`);
   });
 
   socket.on('disconnect', () => {

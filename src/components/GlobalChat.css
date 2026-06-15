@@ -260,6 +260,19 @@
   background: var(--emerald-hover);
 }
 
+.chat-sending-dot {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 @media (max-width: 768px) {
   .global-chat-container {
     bottom: 1rem;

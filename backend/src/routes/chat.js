@@ -1,9 +1,10 @@
 import express from 'express';
 import { db } from '../db/index.js';
 import { chatMessages, users } from '../db/schema.js';
-import { eq, desc, asc, or } from 'drizzle-orm';
+import { eq, desc, asc } from 'drizzle-orm';
 import { authMiddleware } from '../middleware/auth.js';
 import { adminMiddleware } from '../middleware/admin.js';
+import { activeAdminSessions } from '../server.js';
 
 const router = express.Router();
 
@@ -44,16 +45,19 @@ router.post('/send', authMiddleware, async (req, res) => {
       req.io.to(`user_${req.user.id}`).emit('newMessage', newMessage);
     }
 
-    // Auto-reply Logic
-    // Find the previous message (offset 1 because we just inserted the new message)
+    // Auto-reply Logic — skip if admin is actively chatting with this user
     const previousMessages = await db.select()
       .from(chatMessages)
       .where(eq(chatMessages.userId, req.user.id))
       .orderBy(desc(chatMessages.createdAt))
       .limit(2);
 
-    const shouldAutoReply = previousMessages.length <= 1 || 
-      (new Date() - new Date(previousMessages[1].createdAt) > 30 * 60 * 1000);
+    const isAdminActive = activeAdminSessions.has(Number(req.user.id));
+
+    const shouldAutoReply = !isAdminActive && (
+      previousMessages.length <= 1 || 
+      (new Date() - new Date(previousMessages[1]?.createdAt) > 30 * 60 * 1000)
+    );
 
     if (shouldAutoReply) {
       setTimeout(async () => {
@@ -61,7 +65,7 @@ router.post('/send', authMiddleware, async (req, res) => {
           const [autoMsg] = await db.insert(chatMessages).values({
             userId: req.user.id,
             isFromAdmin: true,
-            message: "Halo! Pesan Anda telah kami terima. Saat ini admin sedang melayani pengguna lain dan akan segera membalas pesan Anda. Mohon kesediaannya untuk menunggu 😊",
+            message: "Halo! 👋 Pesan Anda sudah kami terima. Admin sedang melayani pelanggan lain dan akan segera merespons. Jika mendesak, gunakan tombol WhatsApp di atas. Terima kasih atas kesabaran Anda 🙏",
           }).returning();
 
           if (req.io) {
@@ -71,7 +75,7 @@ router.post('/send', authMiddleware, async (req, res) => {
         } catch (autoErr) {
           console.error('Gagal mengirim auto-reply', autoErr);
         }
-      }, 1500); // 1.5 second delay
+      }, 2000);
     }
 
     res.json(newMessage);
