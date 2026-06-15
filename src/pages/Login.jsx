@@ -1,9 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Leaf, Lock, Mail, ArrowRight, Loader } from 'lucide-react';
-import { loginAPI, setAuth, getEdukasi } from '../utils/api';
-import { BookOpen } from 'lucide-react';
+import { Leaf, Lock, Mail, ArrowRight, Loader, BookOpen } from 'lucide-react';
+import { loginAPI, setAuth, getEdukasi, getImageUrl } from '../utils/api';
 import './Login.css';
+
+const DEFAULT_ARTICLES = [
+  {
+    title: 'Cara Meningkatkan Hasil Panen Padi di Musim Kemarau',
+    content: 'Musim kemarau seringkali menjadi tantangan bagi petani padi. Namun dengan pengelolaan air yang tepat dan pemilihan varietas tahan kering, hasil panen bisa tetap maksimal. Berikut panduannya...',
+    imageUrl: 'https://images.unsplash.com/photo-1592982537447-6f2aa0c8cb08?w=800',
+    link: '#'
+  },
+  {
+    title: 'Panduan Lengkap Pemupukan Berimbang',
+    content: 'Pemberian pupuk yang tidak tepat dosis dapat merusak kesuburan tanah. Pemupukan berimbang adalah kunci untuk menjaga produktivitas lahan secara berkelanjutan dan menghemat biaya produksi...',
+    imageUrl: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=800',
+    link: '#'
+  },
+  {
+    title: 'Mengenal Hama Wereng dan Cara Mengatasinya',
+    content: 'Wereng adalah salah satu hama paling merugikan bagi tanaman padi. Deteksi dini dan penggunaan pestisida nabati dapat membantu meminimalisir kerusakan tanpa merusak ekosistem alami...',
+    imageUrl: 'https://images.unsplash.com/photo-1599839619722-39751411ea63?w=800',
+    link: '#'
+  }
+];
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -18,8 +38,13 @@ export default function Login() {
     getEdukasi().then(data => {
       if (data && data.length > 0) {
         setArticles(data);
+      } else {
+        setArticles(DEFAULT_ARTICLES);
       }
-    }).catch(err => console.error("Gagal load edukasi:", err));
+    }).catch(err => {
+      console.error("Gagal load edukasi:", err);
+      setArticles(DEFAULT_ARTICLES);
+    });
   }, []);
 
   // Slider effect
@@ -62,12 +87,10 @@ export default function Login() {
         <div className="left-content slider-container">
           <div className="slides-wrapper" style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
             {articles.map((article, idx) => {
-              const getImageUrl = (url) => url ? (url.startsWith('data:') || url.startsWith('http') ? url : `${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : (window.location.hostname === 'localhost' ? 'http://localhost:5000' : '')}${url}`) : '';
-              
               return (
                 <div key={idx} className="slide-item">
                   <div className="slide-image-wrapper">
-                    {article.link ? (
+                    {article.link && article.link !== '#' ? (
                       <a href={article.link} target="_blank" rel="noopener noreferrer" className="slide-link" title="Klik untuk membaca artikel selengkapnya">
                         {article.imageUrl ? <img src={getImageUrl(article.imageUrl)} alt={article.title} className="slide-image" /> : <div style={{width:'100%', height:'100%', background:'rgba(255,255,255,0.05)', display:'flex', alignItems:'center', justifyContent:'center'}}><BookOpen size={48} color="rgba(255,255,255,0.3)"/></div>}
                       </a>
