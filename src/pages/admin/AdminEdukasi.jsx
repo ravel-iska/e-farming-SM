@@ -149,13 +149,13 @@ export default function AdminEdukasi() {
 
       {/* Modal Add/Edit */}
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-content glass-panel animate-fade-in" onClick={e => e.stopPropagation()} style={{ maxWidth: '650px', width: '95%', padding: '0', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-            <div className="modal-header" style={{ padding: '1.5rem 1.5rem 1rem 1.5rem', marginBottom: 0, borderBottom: '1px solid var(--glass-border)' }}>
+        <div className="modal-overlay" onClick={() => setShowModal(false)} style={{ zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="modal-content glass-panel animate-fade-in" onClick={e => e.stopPropagation()} style={{ maxWidth: '650px', width: '95%', maxHeight: '90vh', padding: '0', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            <div className="modal-header" style={{ padding: '1.5rem 1.5rem 1rem 1.5rem', marginBottom: 0, borderBottom: '1px solid var(--glass-border)', flexShrink: 0 }}>
               <h3>{editItem ? 'Edit Artikel Edukasi' : 'Tambah Artikel Edukasi'}</h3>
               <button className="btn-icon" onClick={() => setShowModal(false)}><X size={20} /></button>
             </div>
-            <div className="modal-body" style={{ textAlign: 'left', maxHeight: '65vh', overflowY: 'auto', padding: '1.5rem' }}>
+            <div className="modal-body" style={{ textAlign: 'left', overflowY: 'auto', padding: '1.5rem', flex: 1 }}>
               
               <div className="form-group">
                 <label>Foto Header / Thumbnail (Upload atau Paste URL)</label>
@@ -218,7 +218,7 @@ export default function AdminEdukasi() {
               </div>
 
             </div>
-            <div className="modal-footer" style={{ padding: '1rem 1.5rem', background: 'rgba(0,0,0,0.1)', borderTop: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+            <div className="modal-footer" style={{ padding: '1rem 1.5rem', background: 'rgba(0,0,0,0.1)', borderTop: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'flex-end', gap: '1rem', flexShrink: 0 }}>
               <button className="btn-secondary" onClick={() => setShowModal(false)}>Batal</button>
               <button className="btn-primary" onClick={handleSave} disabled={saving || !form.title.trim()}>
                 {saving ? 'Menyimpan...' : editItem ? 'Update Artikel' : 'Simpan Artikel'}
