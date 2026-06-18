@@ -155,7 +155,7 @@ export default function AdminEdukasi() {
               <h3>{editItem ? 'Edit Artikel Edukasi' : 'Tambah Artikel Edukasi'}</h3>
               <button className="btn-icon" onClick={() => setShowModal(false)}><X size={20} /></button>
             </div>
-            <div className="modal-body" style={{ textAlign: 'left', maxHeight: '70vh', overflowY: 'auto', paddingRight: '10px' }}>
+            <div className="modal-body" style={{ textAlign: 'left', maxHeight: '65vh', overflowY: 'auto', padding: '0 5px' }}>
               
               <div className="form-group">
                 <label>Foto Header / Thumbnail</label>
@@ -202,7 +202,7 @@ export default function AdminEdukasi() {
                 </div>
               </div>
 
-              <div className="form-group" style={{ marginTop: '1rem' }}>
+              <div className="form-group" style={{ marginTop: '1rem', marginBottom: '1rem' }}>
                 <label>Isi Konten / Teks Artikel</label>
                 <p className="text-muted text-sm" style={{ marginBottom: '8px' }}>Gunakan **Teks Tebal** untuk judul kecil, dan strip (-) untuk list item.</p>
                 <textarea 
@@ -215,7 +215,7 @@ export default function AdminEdukasi() {
               </div>
 
             </div>
-            <div className="modal-footer" style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem' }}>
+            <div className="modal-footer" style={{ paddingTop: '1rem', borderTop: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
               <button className="btn-secondary" onClick={() => setShowModal(false)}>Batal</button>
               <button className="btn-primary" onClick={handleSave} disabled={saving || !form.title.trim()}>
                 {saving ? 'Menyimpan...' : editItem ? 'Update Artikel' : 'Simpan Artikel'}

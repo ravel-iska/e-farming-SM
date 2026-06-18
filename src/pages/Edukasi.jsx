@@ -43,8 +43,12 @@ export default function Edukasi() {
         </button>
 
         <div className="article-detail glass-panel">
-          <div className="article-hero" style={{ backgroundImage: selectedArticle.imageUrl ? `url("${getImageUrl(selectedArticle.imageUrl)}")` : undefined, backgroundSize: 'cover', backgroundPosition: 'center', height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {!selectedArticle.imageUrl && <BookOpen size={64} color="rgba(255,255,255,0.5)" />}
+          <div className="article-hero" style={{ position: 'relative', height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+            {selectedArticle.imageUrl ? (
+              <img src={getImageUrl(selectedArticle.imageUrl)} alt={selectedArticle.title} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
+            ) : (
+              <BookOpen size={64} color="rgba(255,255,255,0.5)" style={{ position: 'relative', zIndex: 1 }} />
+            )}
           </div>
           <div className="article-body">
             <span className="edu-tag">{selectedArticle.category || 'Umum'}</span>
@@ -109,8 +113,12 @@ export default function Edukasi() {
           <div className="edu-grid">
             {filtered.map((item) => (
               <div key={item.id} className="edu-card glass-panel" onClick={() => setSelectedArticle(item)}>
-                <div className="edu-thumbnail" style={{ backgroundImage: item.imageUrl ? `url("${getImageUrl(item.imageUrl)}")` : undefined, backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {!item.imageUrl && <BookOpen size={36} color="rgba(255,255,255,0.3)" />}
+                <div className="edu-thumbnail" style={{ position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {item.imageUrl ? (
+                    <img src={getImageUrl(item.imageUrl)} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
+                  ) : (
+                    <BookOpen size={36} color="rgba(255,255,255,0.3)" style={{ position: 'relative', zIndex: 1 }} />
+                  )}
                 </div>
                 <div className="edu-content">
                   <span className="edu-tag">{item.category || 'Umum'}</span>
