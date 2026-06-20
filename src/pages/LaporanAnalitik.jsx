@@ -34,9 +34,9 @@ export default function LaporanAnalitik() {
 
   const summaryCards = [
     { title: 'Total Panen', value: totalPanen > 0 ? `${totalPanen.toLocaleString('id-ID')} ton` : '—', change: '+12%', icon: PieChart, color: 'var(--emerald-primary)' },
-    { title: 'Pendapatan', value: totalRevenue > 0 ? `Rp ${(totalRevenue).toLocaleString('id-ID')}jt` : '—', change: '+8%', icon: DollarSign, color: 'var(--info)' },
-    { title: 'Pengeluaran', value: totalExpense > 0 ? `Rp ${(totalExpense).toLocaleString('id-ID')}jt` : '—', change: '-4%', icon: Activity, color: 'var(--danger)' },
-    { title: 'Laba Bersih', value: profit !== 0 ? `Rp ${profit.toLocaleString('id-ID')}jt` : '—', change: profit >= 0 ? '+' : '', icon: TrendingUp, color: 'var(--warning)' },
+    { title: 'Pendapatan', value: totalRevenue > 0 ? `Rp ${(totalRevenue).toLocaleString('id-ID')}` : '—', change: '+8%', icon: DollarSign, color: 'var(--info)' },
+    { title: 'Pengeluaran', value: totalExpense > 0 ? `Rp ${(totalExpense).toLocaleString('id-ID')}` : '—', change: '-4%', icon: Activity, color: 'var(--danger)' },
+    { title: 'Laba Bersih', value: profit !== 0 ? `Rp ${profit.toLocaleString('id-ID')}` : '—', change: profit >= 0 ? '+' : '', icon: TrendingUp, color: 'var(--warning)' },
   ];
 
   const tooltipStyle = { backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--glass-border)', color: 'var(--text-primary)', borderRadius: '8px' };

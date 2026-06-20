@@ -97,6 +97,10 @@ export default function Topbar({ toggleSidebar }) {
           {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
         </button>
 
+        <button className="btn-primary" onClick={() => setShowBugForm(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', fontSize: '0.8rem', borderRadius: '8px' }}>
+          <Bug size={16} /> <span className="hide-on-mobile">Lapor Bug</span>
+        </button>
+
         {/* Notification Bell */}
         <div style={{ position: 'relative' }} ref={notifRef}>
           <button className="btn-icon notification-btn" onClick={handleOpenNotif}>
