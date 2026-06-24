@@ -98,7 +98,7 @@ export default function AdminUsers() {
                   <th>Nama</th>
                   <th>Email</th>
                   <th>Role</th>
-                  <th>Tgl Daftar</th>
+                  {/* <th>Tgl Daftar</th> */}
                   <th>Aksi</th>
                 </tr>
               </thead>
@@ -117,7 +117,7 @@ export default function AdminUsers() {
                     </td>
                     <td>{user.email}</td>
                     <td><span className={`admin-badge ${user.role === 'admin' ? 'danger' : 'info'}`}>{user.role}</span></td>
-                    <td>{new Date(user.createdAt).toLocaleDateString('id-ID')}</td>
+                    {/* <td>{new Date(user.createdAt).toLocaleDateString('id-ID')}</td> */}
                     <td>
                       <div className="admin-actions">
                         <button className="admin-btn-action" onClick={() => navigate(`/admin/users/${user.id}`)} title="Detail Pengguna" style={{ color: 'var(--emerald-primary)' }}><Eye size={16} /></button>
@@ -178,7 +178,7 @@ export default function AdminUsers() {
                     </div>
                     <div>
                       <h2 style={{ margin: '0 0 5px 0' }}>{detailUser.user.name}</h2>
-                      <p className="text-muted" style={{ margin: '0 0 10px 0' }}>{detailUser.user.email} &bull; Terdaftar: {new Date(detailUser.user.createdAt).toLocaleDateString('id-ID')}</p>
+                      <p className="text-muted" style={{ margin: '0 0 10px 0' }}>{detailUser.user.email}</p>
                       <span className={`admin-badge ${detailUser.user.role === 'admin' ? 'danger' : 'info'}`} style={{ display: 'inline-block' }}>{detailUser.user.role.toUpperCase()}</span>
                     </div>
                   </div>

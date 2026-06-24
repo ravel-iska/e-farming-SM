@@ -153,7 +153,7 @@ export default function AdminDashboard() {
           <div className="admin-table-container">
             <table className="admin-table">
               <thead>
-                <tr><th>Nama</th><th>Email</th><th>Role</th><th>Terdaftar</th></tr>
+                <tr><th>Nama</th><th>Email</th><th>Role</th>{/* <th>Terdaftar</th> */}</tr>
               </thead>
               <tbody>
                 {stats.recentUsers.map(user => (
@@ -168,7 +168,7 @@ export default function AdminDashboard() {
                     </td>
                     <td className="text-muted">{user.email}</td>
                     <td><span className={`admin-badge ${user.role === 'admin' ? 'danger' : 'info'}`}>{user.role}</span></td>
-                    <td>{new Date(user.createdAt).toLocaleDateString('id-ID')}</td>
+                    {/* <td>{new Date(user.createdAt).toLocaleDateString('id-ID')}</td> */}
                   </tr>
                 ))}
               </tbody>

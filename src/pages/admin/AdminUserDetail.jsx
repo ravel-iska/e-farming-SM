@@ -87,9 +87,9 @@ export default function AdminUserDetail() {
             <p style={{ color: 'var(--text-secondary)', margin: '6px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Mail size={14} /> {user.email}
             </p>
-            <p style={{ color: 'var(--text-secondary)', margin: '0', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem' }}>
+            {/* <p style={{ color: 'var(--text-secondary)', margin: '0', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem' }}>
               <Calendar size={14} /> Bergabung sejak {new Date(user.createdAt).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}
-            </p>
+            </p> */}
           </div>
 
           {/* Stats Cards */}
